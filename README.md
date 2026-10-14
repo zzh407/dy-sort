@@ -1,6 +1,25 @@
 # DY Sort — 本地短视频分类与 Emby 集成
 
+![License](https://img.shields.io/badge/license-MIT-green) ![Python](https://img.shields.io/badge/python-3.11+-blue) ![Docker](https://img.shields.io/badge/docker-compose-2496ED) ![FastAPI](https://img.shields.io/badge/FastAPI-009688)
+
 Docker 化的本地短视频管理工具：媒体库映射总览、浏览预览、一键加入 Emby 媒体库。配置持久化在 `config/config.yaml`，索引存 SQLite，针对大量视频做了性能优化。
+
+## 技术栈
+
+- **后端**：Python 3.11 + FastAPI + Uvicorn，全异步 IO
+- **存储**：SQLite（WAL 模式）索引，文件系统零侵入（只读你的视频目录）
+- **前端**：原生 HTML/CSS/JS，暗色主题，无构建步骤
+- **部署**：单容器 Docker Compose，配置与索引全部持久化挂载
+
+## 亮点速览
+
+| | |
+|---|---|
+| 🔍 **增量扫描** | 目录 mtime 未变直接跳过，7 万+ 视频重启秒级就绪 |
+| 🎬 **在线预览** | 浏览器直接播放，支持 Range 拖动进度条 |
+| 📥 **一键入库** | 按博主目录批量加入 Emby，自动触发媒体库扫描 |
+| 🗺 **路径映射** | 自动处理容器路径与 Emby 侧路径的差异 |
+| ⏱ **定时任务** | 可配置间隔自动重扫，保存即生效无需重启 |
 
 ## 功能
 
@@ -137,3 +156,11 @@ scan_interval: 0
 | POST | `/api/bind` | 绑定短视频根目录 `{"media_subdir":"..."}`，换绑重建索引 |
 | GET/POST | `/api/settings` | 读取/保存设置（写回 config/config.yaml） |
 | GET | `/api/logs?after=N` | 增量拉取运行日志（前端轮询） |
+
+## 许可证
+
+[MIT](LICENSE) © 2026 zzh407
+
+## Star History
+
+如果这个项目对你有帮助，欢迎点个 Star ⭐
