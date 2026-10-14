@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>设置 - DY Sort</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>DY<span>Sort</span></h1>
+  <nav class="nav">
+    <a href="/" class="nav-link">映射</a>
+    <a href="/browse.html" class="nav-link">浏览</a>
+    <a href="/settings.html" class="nav-link active">设置</a>
+    <a href="/logs.html" class="nav-link">日志</a>
+  </nav>
+</header>
+
+<main class="page-narrow">
+  <h2 style="margin-bottom:16px">设置（持久化保存）</h2>
+
+  <div class="form-row">
+    <label>Emby 服务器地址</label>
+    <input id="s-emby-url" placeholder="http://192.168.1.10:8096">
+  </div>
+  <div class="form-row">
+    <label>Emby API Key</label>
+    <input id="s-emby-key" type="password" placeholder="留空则保持不变">
+    <div class="hint" id="s-key-hint"></div>
+  </div>
+  <div class="form-row">
+    <label>媒体库名称前缀（只操作匹配的库）</label>
+    <input id="s-prefix" placeholder="DY_">
+  </div>
+  <div class="form-row">
+    <label>绑定的短视频目录（/data 下）</label>
+    <div style="display:flex;gap:8px">
+      <select id="s-subdir" style="flex:1">
+        <option value="">/（/data 根目录）</option>
+      </select>
+      <button class="btn" onclick="refreshDirs()">刷新</button>
+    </div>
+    <div class="hint">/data 下混有其他媒体时，选择短视频所在子目录；换绑后索引自动重建</div>
+  </div>
+  <div class="form-row">
+    <label>定时重新扫描（分钟）</label>
+    <input id="s-scan-interval" type="number" min="0" step="1" placeholder="0">
+    <div class="hint">0 = 关闭；保存后立即生效，无需重启容器</div>
+  </div>
+  <div class="form-row">
+    <label>Emby 侧视频根路径（选填）</label>
+    <input id="s-host-root" placeholder="例如 D:\Videos，Emby 与本容器路径不一致时填写">
+    <div class="hint">填的是 /data 对应的 Emby 侧路径；传给 Emby 的博主目录 = 该路径/绑定子目录/博主ID。为空则用容器内实际路径</div>
+  </div>
+  <div class="actions" style="margin-top:18px">
+    <button class="btn primary" onclick="saveSettings()">保存</button>
+  </div>
+</main>
+
+<div id="toast"></div>
+<script src="/app.js"></script>
+<script src="/settings.js"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+# 运行期配置与数据（含 Emby API Key，切勿提交）
+config/
+cache/
+
+# SQLite 索引
+*.db
+*.db-wal
+*.db-shm
+
+# Python
+**/__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 临时脚本
+.t_*.py
+
+# 测试目录
+.test_config/
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 日志
+*.log

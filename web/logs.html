@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日志 - DY Sort</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>DY<span>Sort</span></h1>
+  <nav class="nav">
+    <a href="/" class="nav-link">映射</a>
+    <a href="/browse.html" class="nav-link">浏览</a>
+    <a href="/settings.html" class="nav-link">设置</a>
+    <a href="/logs.html" class="nav-link active">日志</a>
+  </nav>
+  <div class="filters">
+    <select id="log-level" onchange="reloadLogs()">
+      <option value="">全部级别</option>
+      <option value="INFO">INFO+</option>
+      <option value="WARNING">WARNING+</option>
+      <option value="ERROR">仅 ERROR</option>
+    </select>
+    <label class="chk"><input type="checkbox" id="log-follow" checked onchange="setFollow(this.checked)"> 自动滚动</label>
+    <button class="btn" onclick="reloadLogs()">刷新</button>
+  </div>
+</header>
+
+<main class="page-logs">
+  <h2 class="page-title">运行日志</h2>
+  <div id="log-view" class="log-view"></div>
+</main>
+
+<div id="toast"></div>
+<script src="/app.js"></script>
+<script src="/logs.js"></script>
+</body>
+</html>

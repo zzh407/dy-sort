@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>浏览 - DY Sort</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>DY<span>Sort</span></h1>
+  <nav class="nav">
+    <a href="/" class="nav-link">映射</a>
+    <a href="/browse.html" class="nav-link active">浏览</a>
+    <a href="/settings.html" class="nav-link">设置</a>
+    <a href="/logs.html" class="nav-link">日志</a>
+  </nav>
+  <div class="filters">
+    <input id="f-q" placeholder="搜索视频名/博主" oninput="debouncedReload()">
+    <select id="f-blogger" onchange="reload()"><option value="">全部博主</option></select>
+    <select id="f-emby" onchange="reload()">
+      <option value="">全部目录</option>
+      <option value="0" selected>未映射目录</option>
+      <option value="1">已映射目录</option>
+    </select>
+  </div>
+  <div class="actions">
+    <button class="btn" onclick="startScan()">重新扫描</button>
+    <button class="btn" onclick="syncEmby()">同步 Emby 状态</button>
+    <button class="btn primary" id="btn-add" onclick="addSelected()">加入 Emby</button>
+  </div>
+</header>
+
+<div id="progress"><span id="progress-text"></span></div>
+
+<main class="page-browse">
+  <div id="toolbar">
+    <label><input type="checkbox" id="sel-all" onchange="toggleAll(this.checked)"> 全选本页</label>
+    <span id="stats"></span>
+    <span class="hint-inline">勾选视频后点「加入 Emby」，按视频所属博主目录批量入库</span>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">没有匹配的视频</div>
+  <div class="pager" id="pager"></div>
+</main>
+
+<div id="toast"></div>
+<script src="/app.js"></script>
+<script src="/browse.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DY Sort - 媒体库映射</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>DY<span>Sort</span></h1>
+  <nav class="nav">
+    <a href="/" class="nav-link active">映射</a>
+    <a href="/browse.html" class="nav-link">浏览</a>
+    <a href="/settings.html" class="nav-link">设置</a>
+    <a href="/logs.html" class="nav-link">日志</a>
+  </nav>
+</header>
+
+<main class="page-home">
+  <section id="emby-overview" style="display:none">
+    <div class="ov-head">
+      <b>Emby 媒体库 → 本地目录</b>
+      <span id="ov-root"></span>
+      <button class="btn" onclick="loadOverview()">刷新</button>
+    </div>
+    <div id="ov-body"></div>
+  </section>
+  <div class="home-empty" id="home-empty" style="display:none">
+    <p>未找到 DY_ 前缀的 Emby 媒体库</p>
+    <p class="hint">请检查 <a href="/settings.html">设置</a> 中的 Emby 地址、API Key 与媒体库前缀</p>
+  </div>
+</main>
+
+<div id="toast"></div>
+<script src="/app.js"></script>
+</body>
+</html>

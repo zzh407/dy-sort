@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>视频预览 - DY Sort</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>DY<span>Sort</span></h1>
+  <nav class="nav">
+    <a href="/" class="nav-link">映射</a>
+    <a href="/browse.html" class="nav-link active">浏览</a>
+    <a href="/settings.html" class="nav-link">设置</a>
+    <a href="/logs.html" class="nav-link">日志</a>
+  </nav>
+</header>
+
+<main class="page-preview">
+  <div class="pv-back"><a href="/browse.html" class="nav-link">&lsaquo; 返回</a></div>
+  <div class="pv-layout">
+    <div class="pv-player">
+      <video id="pv-video" controls autoplay playsinline></video>
+    </div>
+    <aside class="pv-side">
+      <h2 id="pv-name" class="pv-name"></h2>
+      <div class="pv-badges" id="pv-badges"></div>
+      <div class="pv-kv" id="pv-meta"></div>
+      <div class="pv-kv" id="pv-path"></div>
+      <div class="pv-actions">
+        <button class="btn primary" id="pv-add" onclick="addBlogger()">加入 Emby</button>
+      </div>
+      <div class="pv-nav">
+        <button class="btn" id="pv-prev" onclick="step(-1)">&lsaquo; 上一个</button>
+        <span id="pv-pos" class="pv-pos"></span>
+        <button class="btn" id="pv-next" onclick="step(1)">下一个 &rsaquo;</button>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<div id="toast"></div>
+<script src="/app.js"></script>
+<script src="/preview.js"></script>
+</body>
+</html>
