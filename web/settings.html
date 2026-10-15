@@ -53,6 +53,13 @@
     <input id="s-host-root" placeholder="例如 D:\Videos，Emby 与本容器路径不一致时填写">
     <div class="hint">填的是 /data 对应的 Emby 侧路径；传给 Emby 的博主目录 = 该路径/绑定子目录/博主ID。为空则用容器内实际路径</div>
   </div>
+  <div class="form-row">
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+      <input type="checkbox" id="s-enable-delete" style="width:auto">
+      启用删除功能（危险）
+    </label>
+    <div class="hint">开启后可删除单个视频或整个博主目录（磁盘文件不可恢复，博主级删除会联动移出 Emby）。所有删除均有二次确认；关闭立即生效</div>
+  </div>
   <div class="actions" style="margin-top:18px">
     <button class="btn primary" onclick="saveSettings()">保存</button>
   </div>

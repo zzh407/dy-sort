@@ -8,6 +8,8 @@ async function openSettings() {
     document.getElementById('s-prefix').value = d.emby_library_prefix || 'DY_';
     document.getElementById('s-host-root').value = d.host_video_root || '';
     document.getElementById('s-scan-interval').value = d.scan_interval || '0';
+    document.getElementById('s-enable-delete').checked =
+      String(d.enable_delete || '').trim().toLowerCase() === 'true';
     refreshDirs(d.media_subdir || '');
   } catch (e) {
     toast('读取设置失败: ' + e, 'err');
@@ -34,6 +36,8 @@ async function saveSettings() {
     media_subdir: val('s-subdir'),
     host_video_root: val('s-host-root').trim(),
     scan_interval: String(Math.max(0, parseInt(val('s-scan-interval'), 10) || 0)),
+    enable_delete: document.getElementById('s-enable-delete').checked
+      ? 'true' : 'false',
   };
   const key = val('s-emby-key').trim();
   if (key) values.emby_api_key = key;

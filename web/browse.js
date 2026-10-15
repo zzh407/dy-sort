@@ -11,8 +11,9 @@ const _initMapped = new URLSearchParams(location.search).get('mapped') === '1';
 // 从映射页跳来（blogger 或 mapped=1）时改为「已映射目录」
 if (_initBlogger || _initMapped) document.getElementById('f-emby').value = '1';
 
-// 初始博主筛选是否已应用到下拉框（应用一次后不再干预用户选择）
-let _initBloggerApplied = false;
+// 首次请求时 f-blogger 下拉框尚未填充，URL 带入的博主筛选先挂起，
+// 由 renderFilters 消费（选中对应选项）后清空，保证首次请求就带上该筛选
+let _pendingBlogger = _initBlogger;
 
 // 筛选条件变化 -> 回到第一页
 function reload() { page = 1; load(); }
@@ -21,7 +22,8 @@ const debouncedReload = debounce(reload, 400);
 async function load() {
   const p = new URLSearchParams({
     page, page_size: pageSize,
-    q: val('f-q'), blogger: val('f-blogger'), in_emby: val('f-emby'),
+    q: val('f-q'), blogger: _pendingBlogger || val('f-blogger'),
+    in_emby: val('f-emby'),
   });
   const r = await fetch(`${API}/videos?${p}`);
   const data = await r.json();
@@ -37,11 +39,11 @@ async function load() {
 
 function renderFilters(bloggers) {
   const fb = document.getElementById('f-blogger');
-  const bv = fb.value || _initBlogger;
+  const bv = _pendingBlogger || fb.value;
   fb.innerHTML = '<option value="">全部博主</option>' +
     bloggers.map(b => `<option value="${esc(b.dir_name)}" ${b.dir_name===bv?'selected':''}>${esc(b.dir_name)} (${b.video_count})${b.in_emby?' ✓':''}</option>`).join('');
-  // 已应用的初始筛选已转移到 fb.value，防止下次覆盖用户手动选择
-  if (bv && !_initBloggerApplied) { _initBloggerApplied = true; fb.value = bv; }
+  // 初始筛选已同步到下拉框，消费掉；找不到对应选项时也清空，避免影响后续请求
+  _pendingBlogger = '';
 }
 
 function render() {
