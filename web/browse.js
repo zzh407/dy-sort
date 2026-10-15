@@ -52,7 +52,6 @@ function render() {
   grid.innerHTML = items.map(i => `
     <div class="card ${selected.has(i.id) ? 'selected' : ''}" onclick="location.href='/preview.html?id=${i.id}'">
       <div class="check" onclick="event.stopPropagation();toggleSel(${i.id})"></div>
-      <button class="card-del" title="删除该视频" onclick="event.stopPropagation();askDeleteVideo(${i.id})">✕</button>
       <div class="thumb">
         ${i.poster ? `<img src="${i.poster}" loading="lazy" onerror="this.remove()">` : '无海报'}
         ${i.in_emby ? '<span class="badge-emby">已在 Emby</span>' : ''}
@@ -66,6 +65,7 @@ function render() {
 }
 
 // ---------- 删除（单视频 / 整个博主） ----------
+// 卡片角标删除已移除，单视频删除走批量函数 deleteSelectedVideos（逐个确认）
 async function askDeleteVideo(id) {
   const v = items.find(i => i.id === id);
   if (!v) return;
@@ -125,6 +125,20 @@ async function askDeleteBlogger(blogger) {
   } catch (e) { toast('删除失败: ' + e, 'err'); }
 }
 
+// 批量：删除当前勾选的视频（逐个弹确认框，可随时取消）
+async function deleteSelectedVideos() {
+  if (!selected.size) { toast('请先勾选要删除的视频', 'err'); return; }
+  if (!await ensureDeleteEnabled()) return;   // 未开启时弹提示框，先于确认
+  const vids = items.filter(i => selected.has(i.id));
+  if (!vids.length) { toast('没有可删除的视频', 'err'); return; }
+  const tip = `将删除 ${vids.length} 个视频：${vids.slice(0, 5).map(i => i.name).join('、')}` +
+    (vids.length > 5 ? ' 等' : '');
+  if (!window.confirm(tip + '。删除不可恢复，继续后逐个弹窗确认。')) return;
+  for (const v of vids) {
+    await askDeleteVideo(v.id);   // 每个视频都弹独立确认框，可随时取消
+  }
+}
+
 // 批量：删除当前勾选视频所属的全部博主（去重后逐个弹窗确认）
 async function deleteSelectedBloggers() {
   if (!selected.size) { toast('请先勾选视频', 'err'); return; }
@@ -150,6 +164,8 @@ function updateStats() {
   document.getElementById('stats').textContent = txt;
   const btn = document.getElementById('btn-del-blogger');
   if (btn) btn.disabled = !selected.size;   // 未勾选时置灰，避免「点了没反应」
+  const btnv = document.getElementById('btn-del-video');
+  if (btnv) btnv.disabled = !selected.size;
 }
 
 function renderPager() {

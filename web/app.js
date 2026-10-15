@@ -57,18 +57,19 @@ function chooseLibrary() {
     if (!libs.length) { toast('未找到可操作的 Emby 媒体库', 'err'); return resolve(null); }
 
     const mask = _modal();
-    document.getElementById('modal-title').textContent = '选择要加入的 Emby 媒体库';
+    document.getElementById('modal-title').textContent = '选择要加入的 Emby 媒体库（点击直接选择）';
     document.getElementById('modal-body').innerHTML =
-      `<div class="modal-list">${libs.map((l, i) => `
-        <label class="modal-item">
-          <input type="radio" name="mlib" value="${esc(l.name)}"${i ? '' : ' checked'}>
+      `<div class="modal-grid">${libs.map((l, i) => `
+        <button type="button" class="modal-item" data-lib="${esc(l.name)}">
+          <span class="modal-idx">${i + 1}</span>
           <span class="modal-name">${esc(l.name)}</span>
           <span class="modal-sub">${(l.paths || []).length} 个目录</span>
-        </label>`).join('')}</div>`;
-    document.getElementById('modal-ok').onclick = () => {
-      const sel = mask.querySelector('input[name=mlib]:checked');
-      closeModal(sel ? sel.value : null);
-    };
+        </button>`).join('')}</div>`;
+    mask.querySelectorAll('.modal-item').forEach(b => {
+      b.onclick = () => closeModal(b.dataset.lib);
+    });
+    document.getElementById('modal-ok').onclick = () => closeModal(null);
+    document.getElementById('modal-ok').style.display = 'none';
     document.getElementById('modal-cancel').onclick = () => closeModal(null);
     mask.style.display = 'flex';
     _modalResolve = resolve;

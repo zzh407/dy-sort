@@ -110,21 +110,9 @@ header h1 span { background: linear-gradient(120deg, var(--accent), var(--accent
 .btn-copy { padding: 2px 9px; font-size: 11px; border-radius: 7px; margin-left: 6px;
   vertical-align: middle; }
 
-/* 卡片删除角标（hover 显现） */
-.card-del {
-  position: absolute; top: 8px; right: 40px; width: 22px; height: 22px;
-  border-radius: 50%; border: 1px solid rgba(255, 255, 255, .35);
-  background: rgba(10, 13, 20, .55); backdrop-filter: blur(4px);
-  color: rgba(255, 255, 255, .85); font-size: 11px; line-height: 1;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; z-index: 2; opacity: 0; transition: opacity .15s ease;
-}
-.card:hover .card-del { opacity: 1; }
-.card-del:hover { background: rgba(240, 78, 78, .85); border-color: transparent;
-  color: #fff; }
-
-/* 删除功能开关关闭时隐藏全部删除按钮（app.js 启动时按设置切换） */
-body.del-hidden .card-del,
+/* 删除入口统一收在工具栏（卡片角标删除已移除）；
+   删除功能开关关闭时隐藏全部删除按钮（app.js 启动时按设置切换） */
+body.del-hidden #btn-del-video,
 body.del-hidden #btn-del-blogger,
 body.del-hidden #pv-del-video,
 body.del-hidden #pv-del-blogger { display: none; }
@@ -383,6 +371,23 @@ main { padding: 22px 24px 40px; }
 .modal-name { flex: 1; word-break: break-all; font-weight: 500; }
 .modal-sub { color: var(--muted); font-size: 12px; }
 .modal-foot { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+/* 媒体库选择：两列网格，点击即选 */
+.modal-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+}
+.modal-grid .modal-item {
+  flex-direction: column; align-items: flex-start; gap: 4px;
+  text-align: left; padding: 12px 14px; font: inherit; color: inherit;
+  background: rgba(255, 255, 255, .02);
+}
+.modal-grid .modal-item:hover { background: rgba(91, 140, 255, .08); }
+.modal-idx {
+  width: 22px; height: 22px; border-radius: 7px; font-size: 11px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(91, 140, 255, .14); color: var(--accent);
+}
+@media (max-width: 520px) { .modal-grid { grid-template-columns: 1fr; } }
 
 /* 删除确认弹窗 */
 .del-modal { max-width: 520px; width: 100%; }
