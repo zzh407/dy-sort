@@ -42,6 +42,7 @@ function render() {
   grid.innerHTML = items.map(i => `
     <div class="card ${selected.has(i.id) ? 'selected' : ''}" onclick="location.href='/preview.html?id=${i.id}'">
       <div class="check" onclick="event.stopPropagation();toggleSel(${i.id})"></div>
+      <button class="card-del" title="删除该视频" onclick="event.stopPropagation();askDeleteVideo(${i.id})">✕</button>
       <div class="thumb">
         ${i.poster ? `<img src="${i.poster}" loading="lazy" onerror="this.remove()">` : '无海报'}
         ${i.in_emby ? '<span class="badge-emby">已在 Emby</span>' : ''}
@@ -52,6 +53,69 @@ function render() {
       </div>
     </div>`).join('');
   updateStats();
+}
+
+// ---------- 删除（单视频 / 整个博主） ----------
+async function askDeleteVideo(id) {
+  const v = items.find(i => i.id === id);
+  if (!v) return;
+  let pre;
+  try {
+    pre = await fetch(`${API}/delete/video/${id}/preview`).then(x => x.json());
+  } catch (e) { toast('预览失败: ' + e, 'err'); return; }
+  if (pre.error) { toast(pre.error, 'err'); return; }
+
+  const go = await confirmDelete('video', pre);
+  if (!go) return;
+  try {
+    const r = await fetch(`${API}/video/${id}`, {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ confirm: true }) });
+    const d = await r.json();
+    if (d.error) { toast(d.error, 'err'); return; }
+    toast(`已删除「${d.name}」，释放 ${fmtSize(d.freed_bytes)}`, 'ok');
+    selected.delete(id);
+    await load();
+  } catch (e) { toast('删除失败: ' + e, 'err'); }
+}
+
+/** 博主级删除入口：可从筛选栏「删除该博主」或预览页调用 */
+async function askDeleteBlogger(blogger) {
+  if (!blogger) return;
+  let pre;
+  try {
+    pre = await fetch(`${API}/delete/blogger/${encodeURIComponent(blogger)}/preview`)
+      .then(x => x.json());
+  } catch (e) { toast('预览失败: ' + e, 'err'); return; }
+  if (pre.error) { toast(pre.error, 'err'); return; }
+
+  const go = await confirmDelete('blogger', pre);
+  if (!go) return;
+  try {
+    const r = await fetch(`${API}/blogger/${encodeURIComponent(blogger)}`, {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ confirm: true, remove_from_emby: true }) });
+    const d = await r.json();
+    if (d.error) { toast(d.error, 'err'); return; }
+    toast(`已删除博主「${d.blogger}」（${d.videos} 个视频，释放 ${fmtSize(d.freed_bytes)}）`
+        + (d.emby_removed ? '，已从 Emby 移除' : ''), 'ok');
+    selected.clear();
+    document.getElementById('f-blogger').value = '';
+    reload();
+  } catch (e) { toast('删除失败: ' + e, 'err'); }
+}
+
+// 批量：删除当前勾选视频所属的全部博主（去重后逐个弹窗确认）
+async function deleteSelectedBloggers() {
+  if (!selected.size) { toast('请先勾选视频', 'err'); return; }
+  const bloggers = [...new Set(items.filter(i => selected.has(i.id)).map(i => i.blogger))];
+  if (!bloggers.length) { toast('没有可删除的博主目录', 'err'); return; }
+  const tip = `将删除 ${bloggers.length} 个博主目录及全部视频：${bloggers.slice(0, 5).join('、')}` +
+    (bloggers.length > 5 ? ' 等' : '');
+  if (!window.confirm(tip + '？删除不可恢复，继续后仍需在弹窗中逐个输入博主名确认。')) return;
+  for (const b of bloggers) {
+    await askDeleteBlogger(b);   // 每个博主都弹独立确认框，可随时取消
+  }
 }
 
 // 统计栏（含定时扫描状态），内容不变时不重绘

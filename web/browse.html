@@ -27,6 +27,8 @@
   <div class="actions">
     <button class="btn" onclick="startScan()">重新扫描</button>
     <button class="btn" onclick="syncEmby()">同步 Emby 状态</button>
+    <button class="btn danger" id="btn-del-blogger" onclick="deleteSelectedBloggers()"
+            title="删除勾选视频所属的博主目录（整个目录+全部视频，需逐个输入博主名确认）">删除博主</button>
     <button class="btn primary" id="btn-add" onclick="addSelected()">加入 Emby</button>
   </div>
 </header>

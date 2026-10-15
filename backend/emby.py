@@ -50,6 +50,10 @@ class EmbyClient:
         return httpx.post(self.base + path, headers=self._headers(),
                           timeout=kwargs.pop("timeout", 30), **kwargs)
 
+    def _delete(self, path: str, **kwargs) -> httpx.Response:
+        return httpx.delete(self.base + path, headers=self._headers(),
+                            timeout=kwargs.pop("timeout", 30), **kwargs)
+
     # ---------- 媒体库 ----------
     def list_dy_libraries(self) -> list[dict]:
         """只返回前缀匹配的媒体库（默认 DY_）。"""
@@ -102,6 +106,32 @@ class EmbyClient:
             self._post("/Library/Refresh", json={})
         except Exception as e:
             log.warning("触发 Emby 刷新失败: %s", e)
+
+    def remove_blogger_path(self, blogger: str) -> bool:
+        """把博主目录从所有含它的 DY_ 媒体库中移除（Emby 端不再显示）。
+
+        只删媒体库里的**路径条目**；Emby 若有残留条目可另行手动清理。
+        返回是否发生了移除。Emby 未配置时抛 EmbyError。"""
+        target = emby_path(blogger).replace("\\", "/").rstrip("/").lower()
+        removed = False
+        for lib in self.list_dy_libraries():
+            for p in list(lib.get("paths", [])):
+                norm = p.replace("\\", "/").rstrip("/").lower()
+                if norm == target:
+                    r = self._delete(
+                        "/Library/VirtualFolders/Paths",
+                        params={"name": lib["name"], "path": p,
+                                "refreshLibrary": "true"})
+                    if r.status_code < 400:
+                        removed = True
+                        db.execute("DELETE FROM emby_map WHERE path=?",
+                                   (norm,))
+                        log.info("Emby 移除路径: %s (库 %s)", p, lib["name"])
+                    else:
+                        raise EmbyError(
+                            f"Emby 拒绝移除路径（HTTP {r.status_code}）: {p}")
+                    break
+        return removed
 
     def sync_library_paths_to_db(self) -> int:
         """把 Emby 中 DY_ 库的实际路径同步到 emby_map，并刷新 bloggers.in_emby。

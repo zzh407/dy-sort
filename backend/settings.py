@@ -24,6 +24,7 @@ _ENV_DEFAULTS = {
     "host_video_root": os.environ.get("HOST_VIDEO_ROOT", ""),
     "page_size": os.environ.get("PAGE_SIZE", "60"),
     "scan_interval": os.environ.get("SCAN_INTERVAL", "0"),
+    "enable_delete": os.environ.get("ENABLE_DELETE", "false"),
 }
 
 _TEMPLATE = r'''# DY Sort 配置文件
@@ -51,6 +52,10 @@ page_size: 60
 
 # 定时重新扫描间隔（分钟）：0 = 关闭；修改后立即生效，无需重启
 scan_interval: 0
+
+# 删除功能总开关：true 才允许删除视频/博主目录（默认关闭）。
+# 开启后仍需二次确认；边界限制见 backend/cleaner.py
+enable_delete: false
 '''
 
 _yaml = YAML()

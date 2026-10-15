@@ -313,6 +313,79 @@ def emby_overview():
     return {"media_root": local_root, "libraries": out}
 
 
+# ---------- 删除（可选启用，严格边界，见 cleaner.py） ----------
+from .cleaner import (DeleteDisabled, DeleteError, delete_blogger,
+                      delete_bloggers, delete_video, preview_blogger,
+                      preview_video)
+
+
+def _del_error(e: DeleteError):
+    code = 403 if isinstance(e, DeleteDisabled) else 400
+    return JSONResponse({"error": str(e)}, status_code=code)
+
+
+@app.get("/api/delete/video/{vid}/preview")
+def delete_video_preview(vid: int):
+    try:
+        return preview_video(vid)
+    except DeleteError as e:
+        return _del_error(e)
+
+
+@app.get("/api/delete/blogger/{name}/preview")
+def delete_blogger_preview(name: str):
+    try:
+        return preview_blogger(name)
+    except DeleteError as e:
+        return _del_error(e)
+
+
+class DeleteVideoRequest(BaseModel):
+    confirm: bool = False
+
+
+@app.delete("/api/video/{vid}")
+def api_delete_video(vid: int, req: DeleteVideoRequest):
+    """删除单个视频（confirm=true 才执行）。"""
+    try:
+        result = delete_video(vid, confirm=req.confirm)
+    except DeleteError as e:
+        return _del_error(e)
+    return {**result, "video_left": db.count_videos()}
+
+
+class DeleteBloggerRequest(BaseModel):
+    confirm: bool = False
+    remove_from_emby: bool = True
+
+
+@app.delete("/api/blogger/{name}")
+def api_delete_blogger(name: str, req: DeleteBloggerRequest):
+    """删除整个博主（目录 + 全部视频 + Emby 路径，confirm=true 才执行）。"""
+    try:
+        result = delete_blogger(name, confirm=req.confirm,
+                                remove_from_emby=req.remove_from_emby)
+    except DeleteError as e:
+        return _del_error(e)
+    return {**result, "video_left": db.count_videos()}
+
+
+class DeleteBloggersRequest(BaseModel):
+    bloggers: list[str]
+    confirm: bool = False
+    remove_from_emby: bool = True
+
+
+@app.post("/api/delete/bloggers")
+def api_delete_bloggers(req: DeleteBloggersRequest):
+    """批量删除博主（1~50 个，逐个执行，失败项跳过并报告）。"""
+    try:
+        return delete_bloggers(req.bloggers, confirm=req.confirm,
+                               remove_from_emby=req.remove_from_emby)
+    except DeleteError as e:
+        return _del_error(e)
+
+
 # ---------- 设置（持久化） ----------
 class SettingsRequest(BaseModel):
     values: dict[str, str]

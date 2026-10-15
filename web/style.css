@@ -100,8 +100,28 @@ header h1 span { background: linear-gradient(120deg, var(--accent), var(--accent
 }
 .btn.primary:hover { box-shadow: 0 8px 24px rgba(91, 140, 255, .42); }
 .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn.danger {
+  background: linear-gradient(180deg, rgba(240, 78, 78, .16), rgba(240, 78, 78, .08));
+  border-color: rgba(240, 78, 78, .45); color: #ff8a8a; font-weight: 500;
+}
+.btn.danger:hover { border-color: rgba(240, 78, 78, .8); color: #fff;
+  background: linear-gradient(180deg, rgba(240, 78, 78, .32), rgba(240, 78, 78, .16));
+  box-shadow: 0 4px 16px rgba(240, 78, 78, .28); }
 .btn-copy { padding: 2px 9px; font-size: 11px; border-radius: 7px; margin-left: 6px;
   vertical-align: middle; }
+
+/* 卡片删除角标（hover 显现） */
+.card-del {
+  position: absolute; top: 8px; right: 40px; width: 22px; height: 22px;
+  border-radius: 50%; border: 1px solid rgba(255, 255, 255, .35);
+  background: rgba(10, 13, 20, .55); backdrop-filter: blur(4px);
+  color: rgba(255, 255, 255, .85); font-size: 11px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 2; opacity: 0; transition: opacity .15s ease;
+}
+.card:hover .card-del { opacity: 1; }
+.card-del:hover { background: rgba(240, 78, 78, .85); border-color: transparent;
+  color: #fff; }
 
 .filters { display: flex; gap: 10px; flex-wrap: wrap; margin-left: auto; align-items: center; }
 .filters .chk { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
@@ -319,8 +339,9 @@ main { padding: 22px 24px 40px; }
 .pv-badges { margin-bottom: 10px; min-height: 0; }
 .pv-kv { color: var(--muted); font-size: 13px; margin-bottom: 10px; word-break: break-all; }
 .pv-blogger { color: var(--text); font-weight: 600; }
-.pv-actions { margin: 18px 0; }
+.pv-actions { margin: 18px 0; display: flex; flex-direction: column; gap: 9px; }
 .pv-actions .btn { width: 100%; padding: 10px 15px; }
+.pv-actions .btn.danger { padding: 8px 15px; font-size: 13px; }
 .pv-nav { display: flex; align-items: center; gap: 10px; padding-top: 16px;
   border-top: 1px solid var(--border-soft); }
 .pv-pos { color: var(--muted); font-size: 12px; margin: 0 auto; }
@@ -348,6 +369,33 @@ main { padding: 22px 24px 40px; }
 .modal-name { flex: 1; word-break: break-all; font-weight: 500; }
 .modal-sub { color: var(--muted); font-size: 12px; }
 .modal-foot { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+/* 删除确认弹窗 */
+.del-modal { max-width: 520px; width: 100%; }
+.del-target {
+  font-size: 16px; font-weight: 650; color: #ff9a9a; margin-bottom: 12px;
+  word-break: break-all; padding: 10px 14px; border-radius: var(--r-md);
+  background: rgba(240, 78, 78, .10); border: 1px solid rgba(240, 78, 78, .3);
+}
+.del-info { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+.del-row { display: flex; gap: 12px; font-size: 13px; color: var(--muted); }
+.del-row span { flex: 0 0 62px; }
+.del-row b { color: var(--text); font-weight: 550; word-break: break-all; }
+.del-row b.del-danger { color: #ff8a8a; }
+.del-row.warn span, .del-row.warn b { color: #ffb46b; }
+.del-row code { color: var(--text); font-size: 12px; word-break: break-all; }
+.del-note { color: var(--muted); font-size: 12.5px; line-height: 1.6;
+  margin-bottom: 12px; }
+.del-input {
+  width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13px;
+  background: rgba(255, 255, 255, .04); border: 1px solid var(--border);
+  border-radius: var(--r-md); color: var(--text); outline: none;
+}
+.del-input:focus { border-color: rgba(240, 78, 78, .6);
+  box-shadow: 0 0 0 3px rgba(240, 78, 78, .15); }
+.del-check { display: flex; align-items: center; gap: 8px; font-size: 13px;
+  color: var(--text); cursor: pointer; }
+.del-check input { width: 15px; height: 15px; accent-color: #f04e4e; }
 
 /* ---------------- 响应式 ---------------- */
 @media (max-width: 980px) {

@@ -108,6 +108,49 @@ async function addBlogger() {
   } catch (e) { toast('加入 Emby 失败: ' + e, 'err'); }
 }
 
+// ---------- 删除（单视频 / 整个博主） ----------
+async function delThisVideo() {
+  if (!current) return;
+  let pre;
+  try {
+    pre = await fetch(`${API}/delete/video/${vid}/preview`).then(x => x.json());
+  } catch (e) { toast('预览失败: ' + e, 'err'); return; }
+  if (pre.error) { toast(pre.error, 'err'); return; }
+  const go = await confirmDelete('video', pre);
+  if (!go) return;
+  try {
+    const r = await fetch(`${API}/video/${vid}`, {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ confirm: true }) });
+    const d = await r.json();
+    if (d.error) { toast(d.error, 'err'); return; }
+    toast(`已删除「${d.name}」`, 'ok');
+    // 回退到浏览页（当前视频已不存在）
+    location.href = '/browse.html';
+  } catch (e) { toast('删除失败: ' + e, 'err'); }
+}
+
+async function delThisBlogger() {
+  if (!current) return;
+  let pre;
+  try {
+    pre = await fetch(`${API}/delete/blogger/${encodeURIComponent(current.blogger)}/preview`)
+      .then(x => x.json());
+  } catch (e) { toast('预览失败: ' + e, 'err'); return; }
+  if (pre.error) { toast(pre.error, 'err'); return; }
+  const go = await confirmDelete('blogger', pre);
+  if (!go) return;
+  try {
+    const r = await fetch(`${API}/blogger/${encodeURIComponent(current.blogger)}`, {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ confirm: true, remove_from_emby: true }) });
+    const d = await r.json();
+    if (d.error) { toast(d.error, 'err'); return; }
+    toast(`已删除博主「${d.blogger}」（${d.videos} 个视频）`, 'ok');
+    location.href = '/browse.html';
+  } catch (e) { toast('删除失败: ' + e, 'err'); }
+}
+
 window.onpopstate = e => {
   const id = e.state && e.state.id;
   if (id) loadVideo(id);

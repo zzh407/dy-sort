@@ -30,6 +30,10 @@
       <div class="pv-kv" id="pv-path"></div>
       <div class="pv-actions">
         <button class="btn primary" id="pv-add" onclick="addBlogger()">加入 Emby</button>
+        <button class="btn danger" id="pv-del-video" onclick="delThisVideo()"
+                title="仅删除当前视频及其目录（海报/元数据一并删除）">删除本视频</button>
+        <button class="btn danger" id="pv-del-blogger" onclick="delThisBlogger()"
+                title="删除整个博主目录及其全部视频（需输入博主名确认）">删除该博主全部视频</button>
       </div>
       <div class="pv-nav">
         <button class="btn" id="pv-prev" onclick="step(-1)">&lsaquo; 上一个</button>

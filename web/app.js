@@ -136,6 +136,83 @@ function toggleOvMore(btn) {
   btn.textContent = opening ? '收起' : `展开其余 ${total - OV_COLLAPSE} 个目录`;
 }
 
+// ---------- 通用弹窗：删除确认（严格区分粒度与边界说明） ----------
+let _delResolve = null;
+
+function _delModal() {
+  let mask = document.getElementById('del-mask');
+  if (mask) return mask;
+  mask = document.createElement('div');
+  mask.id = 'del-mask';
+  mask.className = 'modal-mask';
+  mask.style.display = 'none';
+  document.body.appendChild(mask);
+  return mask;
+}
+
+/**
+ * 删除确认弹窗。resolve 执行结果对象或 null（取消）。
+ * mode: 'video' 单视频（需勾选确认）| 'blogger' 整个博主（需输入博主名确认）
+ */
+function confirmDelete(mode, info) {
+  return new Promise(resolve => {
+    const mask = _delModal();
+    const isBlogger = mode === 'blogger';
+    const target = isBlogger ? info.blogger : info.name;
+    const sizeTxt = info.size ? fmtSize(info.size) : (info.bytes ? fmtSize(info.bytes) : '');
+    const sizeLine = sizeTxt ? `<div class="del-row"><span>大小</span><b>${sizeTxt}</b></div>` : '';
+    const videoLine = isBlogger
+      ? `<div class="del-row"><span>将删除</span><b class="del-danger">${info.videos} 个视频</b></div>` : '';
+    const embyLine = isBlogger && info.in_emby
+      ? `<div class="del-row warn"><span>Emby</span><b>将从媒体库移除该目录</b></div>` : '';
+
+    mask.innerHTML = `
+      <div class="modal del-modal">
+        <h3>${isBlogger ? '删除整个博主' : '删除单个视频'}</h3>
+        <div class="del-target">${esc(target)}</div>
+        <div class="del-info">
+          ${videoLine}
+          ${sizeLine}
+          <div class="del-row"><span>磁盘路径</span><code>${esc(info.path || '')}</code></div>
+          ${embyLine}
+        </div>
+        <div class="del-note">
+          ${isBlogger
+            ? '此操作将永久删除磁盘上的整个博主目录（含全部视频、海报、元数据），不可恢复。'
+            : '此操作将永久删除该视频目录（含海报、元数据），不可恢复。'}
+          ${isBlogger ? '请输入博主名以确认：' : '请勾选下方确认框：'}
+        </div>
+        ${isBlogger
+          ? `<input class="del-input" id="del-input" autocomplete="off"
+                   placeholder="输入 ${esc(target)} 以解锁删除">`
+          : `<label class="del-check"><input type="checkbox" id="del-check">
+             我确认删除该视频，并了解不可恢复</label>`}
+        <div class="modal-foot">
+          <button class="btn" id="del-cancel">取消</button>
+          <button class="btn btn-danger" id="del-ok" disabled>
+            ${isBlogger ? '永久删除博主' : '永久删除视频'}</button>
+          </div>
+      </div>`;
+
+    const okBtn = mask.querySelector('#del-ok');
+    const cancelBtn = mask.querySelector('#del-cancel');
+    const gate = isBlogger
+      ? mask.querySelector('#del-input')
+      : mask.querySelector('#del-check');
+    const sync = () => {
+      okBtn.disabled = isBlogger
+        ? (gate.value.trim() !== target)
+        : !gate.checked;
+    };
+    gate.addEventListener(isBlogger ? 'input' : 'change', sync);
+    if (isBlogger) setTimeout(() => gate.focus(), 50);
+
+    okBtn.onclick = () => { mask.style.display = 'none'; resolve(true); };
+    cancelBtn.onclick = () => { mask.style.display = 'none'; resolve(null); };
+    mask.onclick = e => { if (e.target === mask) { mask.style.display = 'none'; resolve(null); } };
+  });
+}
+
 // ---------- init（仅首页执行；浏览/设置/日志/预览页同样引入本文件） ----------
 if (document.getElementById('emby-overview')) {
   loadOverview();
