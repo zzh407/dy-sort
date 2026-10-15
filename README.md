@@ -153,6 +153,7 @@ scan_interval: 0
 | GET | `/api/emby/overview` | 媒体库 → 本地目录映射（首页） |
 | POST | `/api/emby/sync` | 同步 Emby 实际路径到本地映射 |
 | POST | `/api/emby/add` | 加入博主目录 `{"bloggers":[...],"library_name":"DY_xxx"}` 空 bloggers 则全部未加入 |
+| POST | `/api/emby/remove` | 移出博主目录 `{"blogger":"xx","confirm":true}`，仅删库路径条目不动本地文件 |
 | GET | `/api/emby/map` | 查看路径对应关系 |
 | GET | `/api/dirs` | 浏览 /data 子目录（绑定短视频根目录） |
 | POST | `/api/bind` | 绑定短视频根目录 `{"media_subdir":"..."}`，换绑重建索引 |
