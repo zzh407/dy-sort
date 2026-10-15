@@ -96,12 +96,14 @@ async function loadOverview() {
     body.innerHTML = d.libraries.map(lib => {
       const rows = lib.dirs.map((x, i) => `
         <div class="ov-dir"${i >= OV_COLLAPSE ? ' style="display:none"' : ''}
-             onclick="location.href='/browse.html?blogger=${encodeURIComponent(x.blogger)}'"
-             title="点击浏览该博主的视频">
+             onclick="location.href='/browse.html?blogger=${encodeURIComponent(x.blogger)}&mapped=1'"
+             title="点击浏览该博主的视频（已映射目录）">
           <span class="ov-blogger" title="${esc(x.emby_path)}">${esc(x.blogger)}</span>
           <span class="ov-arrow">→</span>
           <code class="ov-local" title="${esc(x.local_path)}">${esc(x.local_path)}</code>
           <span class="ov-count ${x.videos == null ? 'warn' : 'ok'}">${x.videos == null ? '未索引' : x.videos + ' 视频'}</span>
+          <button class="btn ov-remove" data-remove="${esc(x.blogger)}"
+                  title="把该目录从 Emby 媒体库移除（不影响本地文件，之后可重新加入）">移出</button>
         </div>`).join('');
       const hidden = lib.dirs.length - OV_COLLAPSE;
       return `
@@ -135,6 +137,33 @@ function toggleOvMore(btn) {
   });
   btn.textContent = opening ? '收起' : `展开其余 ${total - OV_COLLAPSE} 个目录`;
 }
+
+/** 把博主目录从 Emby 媒体库移除（只删库路径条目，本地文件不受影响，可重新加入） */
+async function removeFromEmby(btn, blogger) {
+  if (!blogger) return;
+  if (!window.confirm(`将把目录「${blogger}」从 Emby 媒体库移除。\n`
+      + '本地文件不会被删除，之后仍可重新加入。确定继续？')) return;
+  btn.disabled = true;
+  try {
+    const r = await fetch(`${API}/emby/remove`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ blogger, confirm: true }) });
+    const d = await r.json();
+    if (d.error) { toast(d.error, 'err'); btn.disabled = false; return; }
+    toast(`已把「${d.removed}」移出 Emby 媒体库`, 'ok');
+    await loadOverview();   // 刷新列表（该行已不在库中，按钮随之消失）
+  } catch (e) { toast('移出失败: ' + e, 'err'); btn.disabled = false; }
+}
+
+// 捕获阶段委托：绑定映射行内「移出」按钮。
+// 必须用 capture（先于行的 onclick 跳转触发）并阻断冒泡，否则点击会先跳转浏览页。
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.ov-remove');
+  if (btn) {
+    e.stopPropagation();
+    removeFromEmby(btn, btn.dataset.remove);
+  }
+}, true);
 
 // ---------- 通用弹窗：删除确认（严格区分粒度与边界说明） ----------
 let _delResolve = null;

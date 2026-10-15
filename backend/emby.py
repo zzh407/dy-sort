@@ -116,16 +116,16 @@ class EmbyClient:
         removed = False
         for lib in self.list_dy_libraries():
             for p in list(lib.get("paths", [])):
-                norm = p.replace("\\", "/").rstrip("/").lower()
-                if norm == target:
+                norm = p.replace("\\", "/").rstrip("/")
+                if norm.lower() == target:
                     r = self._delete(
                         "/Library/VirtualFolders/Paths",
                         params={"name": lib["name"], "path": p,
                                 "refreshLibrary": "true"})
                     if r.status_code < 400:
                         removed = True
-                        db.execute("DELETE FROM emby_map WHERE path=?",
-                                   (norm,))
+                        db.execute("DELETE FROM emby_map WHERE path=? OR path=?",
+                                   (norm, norm.lower()))
                         log.info("Emby 移除路径: %s (库 %s)", p, lib["name"])
                     else:
                         raise EmbyError(

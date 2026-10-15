@@ -4,9 +4,15 @@
 
 // 支持从映射页带入博主筛选：/browse.html?blogger=xxx
 const _initBlogger = new URLSearchParams(location.search).get('blogger') || '';
+// 支持从映射页带入「已映射目录」筛选：/browse.html?blogger=xxx&mapped=1
+const _initMapped = new URLSearchParams(location.search).get('mapped') === '1';
 
-// 默认只看「未映射目录」的视频；指定博主时不叠加该限制
-if (_initBlogger) document.getElementById('f-emby').value = '';
+// 默认只看「未映射目录」的视频；
+// 从映射页跳来（blogger 或 mapped=1）时改为「已映射目录」
+if (_initBlogger || _initMapped) document.getElementById('f-emby').value = '1';
+
+// 初始博主筛选是否已应用到下拉框（应用一次后不再干预用户选择）
+let _initBloggerApplied = false;
 
 // 筛选条件变化 -> 回到第一页
 function reload() { page = 1; load(); }
@@ -34,6 +40,8 @@ function renderFilters(bloggers) {
   const bv = fb.value || _initBlogger;
   fb.innerHTML = '<option value="">全部博主</option>' +
     bloggers.map(b => `<option value="${esc(b.dir_name)}" ${b.dir_name===bv?'selected':''}>${esc(b.dir_name)} (${b.video_count})${b.in_emby?' ✓':''}</option>`).join('');
+  // 已应用的初始筛选已转移到 fb.value，防止下次覆盖用户手动选择
+  if (bv && !_initBloggerApplied) { _initBloggerApplied = true; fb.value = bv; }
 }
 
 function render() {

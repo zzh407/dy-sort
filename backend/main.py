@@ -274,6 +274,39 @@ def emby_map():
     return {"map": [dict(r) for r in rows]}
 
 
+class EmbyRemoveRequest(BaseModel):
+    blogger: str
+    confirm: bool = False
+
+
+@app.post("/api/emby/remove")
+def emby_remove(req: EmbyRemoveRequest):
+    """把博主目录从 Emby 媒体库移除（只删库路径条目，不动本地文件）。
+
+    与删除博主不同：这是可逆操作，重新「加入 Emby」即可恢复；
+    本地索引与磁盘文件不受影响。"""
+    if not req.blogger or not req.blogger.strip():
+        return JSONResponse({"error": "缺少 blogger 参数"}, status_code=400)
+    if not req.confirm:
+        return JSONResponse({"error": "缺少二次确认 (confirm=true)"}, status_code=400)
+    name = req.blogger.strip()
+    try:
+        removed = EmbyClient().remove_blogger_path(name)
+    except EmbyError as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
+    except Exception as e:
+        log.exception("移出 Emby 失败")
+        return JSONResponse({"error": f"Emby 请求失败: {e}"}, status_code=502)
+    if not removed:
+        return JSONResponse({"error": f"该目录不在任何 DY_ 媒体库中: {name}"},
+                            status_code=404)
+    try:
+        EmbyClient().sync_library_paths_to_db()   # 刷新 bloggers.in_emby
+    except Exception as e:
+        log.warning("移出后同步 Emby 状态失败: %s", e)
+    return {"removed": name, "emby_removed": True}
+
+
 @app.get("/api/emby/overview")
 def emby_overview():
     """每个 Emby 媒体库对应的本地目录概览（首页展示用）。
