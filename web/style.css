@@ -107,6 +107,12 @@ header h1 span { background: linear-gradient(120deg, var(--accent), var(--accent
 .btn.danger:hover { border-color: rgba(240, 78, 78, .8); color: #fff;
   background: linear-gradient(180deg, rgba(240, 78, 78, .32), rgba(240, 78, 78, .16));
   box-shadow: 0 4px 16px rgba(240, 78, 78, .28); }
+.btn-danger {
+  color: #fff; border-color: transparent;
+  background: linear-gradient(120deg, #e14b4b, #c22f2f);
+  box-shadow: 0 4px 16px rgba(240, 78, 78, .3);
+}
+.btn-danger:hover { filter: brightness(1.12); }
 .btn-copy { padding: 2px 9px; font-size: 11px; border-radius: 7px; margin-left: 6px;
   vertical-align: middle; }
 

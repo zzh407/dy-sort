@@ -142,8 +142,11 @@ function toggleOvMore(btn) {
 /** 把博主目录从 Emby 媒体库移除（只删库路径条目，本地文件不受影响，可重新加入） */
 async function removeFromEmby(btn, blogger) {
   if (!blogger) return;
-  if (!window.confirm(`将把目录「${blogger}」从 Emby 媒体库移除。\n`
-      + '本地文件不会被删除，之后仍可重新加入。确定继续？')) return;
+  const go = await confirmAction('移出 Emby 媒体库',
+    `将把目录「${esc(blogger)}」从 Emby 媒体库移除。<br>` +
+    '本地文件不会被删除，之后仍可重新加入。确定继续？',
+    '移出', true);
+  if (!go) return;
   btn.disabled = true;
   try {
     const r = await fetch(`${API}/emby/remove`, {
@@ -240,6 +243,28 @@ function confirmDelete(mode, info) {
     okBtn.onclick = () => { mask.style.display = 'none'; resolve(true); };
     cancelBtn.onclick = () => { mask.style.display = 'none'; resolve(null); };
     mask.onclick = e => { if (e.target === mask) { mask.style.display = 'none'; resolve(null); } };
+  });
+}
+
+/** 通用确认弹窗（替代 window.confirm）：原生 confirm 被浏览器
+ *  「阻止此页面显示更多对话框」抑制后会静默返回 false，导致删除点击
+ *  无反应且无报错；应用内弹窗不受影响。resolve true=确认。 */
+function confirmAction(title, bodyHtml, okText, danger) {
+  return new Promise(resolve => {
+    const mask = _delModal();
+    mask.innerHTML =
+      '<div class="modal del-modal">' +
+      '<h3>' + esc(title) + '</h3>' +
+      '<div class="del-note">' + bodyHtml + '</div>' +
+      '<div class="modal-foot">' +
+      '<button class="btn" id="del-cancel">取消</button>' +
+      '<button class="btn ' + (danger ? 'btn-danger' : 'primary') + '" id="del-ok">' + esc(okText || '确定') + '</button>' +
+      '</div></div>';
+    mask.style.display = 'flex';
+    const done = v => { mask.style.display = 'none'; resolve(v); };
+    mask.querySelector('#del-cancel').onclick = () => done(false);
+    mask.querySelector('#del-ok').onclick = () => done(true);
+    mask.onclick = e => { if (e.target === mask) done(false); };
   });
 }
 
