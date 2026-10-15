@@ -320,6 +320,7 @@ function alertDeleteDisabled() {
 }
 
 // ---------- init（首页执行概览；所有页面统一做删除开关门控） ----------
+console.log('DYSort web v3 · confirmAction ready');
 if (document.getElementById('emby-overview')) {
   loadOverview();
 }
