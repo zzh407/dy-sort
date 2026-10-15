@@ -111,11 +111,16 @@ async function addBlogger() {
 // ---------- 删除（单视频 / 整个博主） ----------
 async function delThisVideo() {
   if (!current) return;
-  let pre;
+  if (!await ensureDeleteEnabled()) return;   // 未开启时弹提示框
+  let pre, r;
   try {
-    pre = await fetch(`${API}/delete/video/${vid}/preview`).then(x => x.json());
+    r = await fetch(`${API}/delete/video/${vid}/preview`);
+    pre = await r.json();
   } catch (e) { toast('预览失败: ' + e, 'err'); return; }
-  if (pre.error) { toast(pre.error, 'err'); return; }
+  if (pre.error) {
+    r.status === 403 ? alertDeleteDisabled() : toast(pre.error, 'err');
+    return;
+  }
   const go = await confirmDelete('video', pre);
   if (!go) return;
   try {
@@ -132,12 +137,16 @@ async function delThisVideo() {
 
 async function delThisBlogger() {
   if (!current) return;
-  let pre;
+  if (!await ensureDeleteEnabled()) return;   // 未开启时弹提示框
+  let pre, r;
   try {
-    pre = await fetch(`${API}/delete/blogger/${encodeURIComponent(current.blogger)}/preview`)
-      .then(x => x.json());
+    r = await fetch(`${API}/delete/blogger/${encodeURIComponent(current.blogger)}/preview`);
+    pre = await r.json();
   } catch (e) { toast('预览失败: ' + e, 'err'); return; }
-  if (pre.error) { toast(pre.error, 'err'); return; }
+  if (pre.error) {
+    r.status === 403 ? alertDeleteDisabled() : toast(pre.error, 'err');
+    return;
+  }
   const go = await confirmDelete('blogger', pre);
   if (!go) return;
   try {

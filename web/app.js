@@ -242,6 +242,46 @@ function confirmDelete(mode, info) {
   });
 }
 
+// ---------- 删除功能开关前置检查 ----------
+let _delEnabled = false;   // 会话内已确认开启后不再重复请求
+
+/** 删除入口前置检查：未开启时弹提示框（可跳设置页）。返回 true=已开启可继续。
+ *  结果为 false 时不缓存，下次点击会重新查询（用户可能刚去设置页开了开关）。 */
+async function ensureDeleteEnabled() {
+  if (_delEnabled) return true;
+  try {
+    const d = await fetch(`${API}/settings`).then(x => x.json());
+    _delEnabled = String(d.enable_delete || '').trim().toLowerCase() === 'true';
+  } catch (e) { /* 查询失败时仍走弹窗，后续接口还有 403 兜底 */ }
+  if (_delEnabled) return true;
+  alertDeleteDisabled();
+  return false;
+}
+
+/** 未启用删除功能的模态提示：说明原因 + 前往设置按钮 */
+function alertDeleteDisabled() {
+  const mask = _delModal();
+  mask.innerHTML = `
+    <div class="modal del-modal">
+      <h3>删除功能未开启</h3>
+      <div class="del-note" style="margin-top:2px">
+        为防止误删，删除功能默认关闭。请到「设置」页勾选
+        <b>「启用删除功能」</b>并保存后再试。
+      </div>
+      <div class="modal-foot">
+        <button class="btn" id="del-cancel">知道了</button>
+        <button class="btn primary" id="del-ok">前往设置</button>
+      </div>
+    </div>`;
+  mask.style.display = 'flex';
+  mask.querySelector('#del-cancel').onclick = () => { mask.style.display = 'none'; };
+  mask.querySelector('#del-ok').onclick = () => {
+    mask.style.display = 'none';
+    location.href = '/settings.html';
+  };
+  mask.onclick = e => { if (e.target === mask) mask.style.display = 'none'; };
+}
+
 // ---------- init（仅首页执行；浏览/设置/日志/预览页同样引入本文件） ----------
 if (document.getElementById('emby-overview')) {
   loadOverview();

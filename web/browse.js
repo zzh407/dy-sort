@@ -69,11 +69,17 @@ function render() {
 async function askDeleteVideo(id) {
   const v = items.find(i => i.id === id);
   if (!v) return;
-  let pre;
+  if (!await ensureDeleteEnabled()) return;   // 未开启时弹提示框
+  let pre, r;
   try {
-    pre = await fetch(`${API}/delete/video/${id}/preview`).then(x => x.json());
+    r = await fetch(`${API}/delete/video/${id}/preview`);
+    pre = await r.json();
   } catch (e) { toast('预览失败: ' + e, 'err'); return; }
-  if (pre.error) { toast(pre.error, 'err'); return; }
+  if (pre.error) {
+    // 403 = 服务端确认未开启（开关可能刚被改回），弹提示框；其余错误走 toast
+    r.status === 403 ? alertDeleteDisabled() : toast(pre.error, 'err');
+    return;
+  }
 
   const go = await confirmDelete('video', pre);
   if (!go) return;
@@ -92,12 +98,16 @@ async function askDeleteVideo(id) {
 /** 博主级删除入口：可从筛选栏「删除该博主」或预览页调用 */
 async function askDeleteBlogger(blogger) {
   if (!blogger) return;
-  let pre;
+  if (!await ensureDeleteEnabled()) return;   // 未开启时弹提示框
+  let pre, r;
   try {
-    pre = await fetch(`${API}/delete/blogger/${encodeURIComponent(blogger)}/preview`)
-      .then(x => x.json());
+    r = await fetch(`${API}/delete/blogger/${encodeURIComponent(blogger)}/preview`);
+    pre = await r.json();
   } catch (e) { toast('预览失败: ' + e, 'err'); return; }
-  if (pre.error) { toast(pre.error, 'err'); return; }
+  if (pre.error) {
+    r.status === 403 ? alertDeleteDisabled() : toast(pre.error, 'err');
+    return;
+  }
 
   const go = await confirmDelete('blogger', pre);
   if (!go) return;
@@ -118,6 +128,7 @@ async function askDeleteBlogger(blogger) {
 // 批量：删除当前勾选视频所属的全部博主（去重后逐个弹窗确认）
 async function deleteSelectedBloggers() {
   if (!selected.size) { toast('请先勾选视频', 'err'); return; }
+  if (!await ensureDeleteEnabled()) return;   // 未开启时弹提示框，先于批量确认
   const bloggers = [...new Set(items.filter(i => selected.has(i.id)).map(i => i.blogger))];
   if (!bloggers.length) { toast('没有可删除的博主目录', 'err'); return; }
   const tip = `将删除 ${bloggers.length} 个博主目录及全部视频：${bloggers.slice(0, 5).join('、')}` +
