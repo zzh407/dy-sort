@@ -1,6 +1,6 @@
 # DY Sort — 本地短视频分类与 Emby 集成
 
-![License](https://img.shields.io/badge/license-MIT-green) ![Python](https://img.shields.io/badge/python-3.11+-blue) ![Docker](https://img.shields.io/badge/docker-compose-2496ED) ![FastAPI](https://img.shields.io/badge/FastAPI-009688)
+![License](https://img.shields.io/badge/license-MIT-green) ![Python](https://img.shields.io/badge/python-3.11+-blue) ![Docker](https://img.shields.io/badge/docker-compose-2496ED) ![FastAPI](https://img.shields.io/badge/FastAPI-009688) ![Emby](https://img.shields.io/badge/Emby-4.10.1-52B400)
 
 Docker 化的本地短视频管理工具：媒体库映射总览、浏览预览、一键加入 Emby 媒体库。配置持久化在 `config/config.yaml`，索引存 SQLite，针对大量视频做了性能优化。
 
@@ -10,6 +10,7 @@ Docker 化的本地短视频管理工具：媒体库映射总览、浏览预览�
 - **存储**：SQLite（WAL 模式）索引，文件系统零侵入（只读你的视频目录）
 - **前端**：原生 HTML/CSS/JS，暗色主题，无构建步骤
 - **部署**：单容器 Docker Compose，配置与索引全部持久化挂载
+- **兼容**：针对 **Emby 4.10.1**（4.10.x）开发实测；加入/移出媒体库路径均使用库 Guid 接口
 
 ## 亮点速览
 
@@ -68,22 +69,41 @@ Docker 化的本地短视频管理工具：媒体库映射总览、浏览预览�
 
 ## 快速开始
 
-1. 编辑 `docker-compose.yml`：把 `/path/to/your/videos` 改成你的视频根目录，并挂载 `./config` 目录：
+镜像已发布到 GitHub Container Registry，无需克隆仓库或本地构建：
+
+1. 准备 `docker-compose.yml`（把 `/path/to/your/videos` 改成你的视频根目录）：
 
 ```yaml
-volumes:
-  - /your/videos:/data       # 你的视频根目录
-  - ./config:/app/config     # 配置目录（config.yaml 持久化）
-  - ./cache:/app/.cache      # SQLite 索引缓存
+services:
+  dy-sort:
+    image: ghcr.io/zzh407/dy-sort:latest
+    container_name: dy-sort
+    ports:
+      - "8088:8000"
+    volumes:
+      - /path/to/your/videos:/data   # 你的视频根目录
+      - ./config:/app/config         # 配置目录（config.yaml 持久化）
+      - ./cache:/app/.cache          # SQLite 索引缓存
+    restart: unless-stopped
 ```
 
 2. 启动（首次会自动生成 `config/config.yaml` 模板）：
 
 ```powershell
-docker compose up -d --build
+docker compose pull && docker compose up -d
 ```
 
-3. 打开 `http://localhost:8088`，首页查看映射总览；在「设置」页填好 Emby 连接信息后保存。
+3. 升级到新版本：
+
+```powershell
+docker compose pull && docker compose up -d
+```
+
+4. 打开 `http://localhost:8088`，首页查看映射总览；在「设置」页填好 Emby 连接信息后保存。
+
+> 标签说明：`latest` 跟随主干最新提交，`v0.1.0` 为版本_tag；也可以 `docker pull ghcr.io/zzh407/dy-sort:v0.1.0` 直接拉取。
+>
+> 从源码构建（可选）：克隆本仓库后 `docker compose up -d --build`，compose 中 `build: .` 会替换镜像方式。
 
 ## 配置文件 config/config.yaml
 
