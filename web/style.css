@@ -123,6 +123,12 @@ header h1 span { background: linear-gradient(120deg, var(--accent), var(--accent
 .card-del:hover { background: rgba(240, 78, 78, .85); border-color: transparent;
   color: #fff; }
 
+/* 删除功能开关关闭时隐藏全部删除按钮（app.js 启动时按设置切换） */
+body.del-hidden .card-del,
+body.del-hidden #btn-del-blogger,
+body.del-hidden #pv-del-video,
+body.del-hidden #pv-del-blogger { display: none; }
+
 .filters { display: flex; gap: 10px; flex-wrap: wrap; margin-left: auto; align-items: center; }
 .filters .chk { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
 .filters input, .filters select {

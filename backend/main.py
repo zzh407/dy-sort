@@ -436,6 +436,16 @@ def save_settings(req: SettingsRequest):
 
 
 # ---------- 前端 ----------
+@app.middleware("http")
+async def no_cache_static(request, call_next):
+    """静态页面/资源禁用缓存：前端无构建无版本号，避免改版后浏览器仍用旧 JS。"""
+    resp = await call_next(request)
+    p = request.url.path
+    if not p.startswith("/api/") and (
+            p == "/" or "." in p.rsplit("/", 1)[-1]):
+        resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
 import os
 if os.path.isdir("web"):
     app.mount("/", StaticFiles(directory="web", html=True), name="web")

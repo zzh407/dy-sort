@@ -242,20 +242,31 @@ function confirmDelete(mode, info) {
   });
 }
 
-// ---------- 删除功能开关前置检查 ----------
-let _delEnabled = false;   // 会话内已确认开启后不再重复请求
+// ---------- 删除功能开关门控 ----------
+let _delEnabled = null;   // null=尚未查询；true/false=已确认
 
-/** 删除入口前置检查：未开启时弹提示框（可跳设置页）。返回 true=已开启可继续。
- *  结果为 false 时不缓存，下次点击会重新查询（用户可能刚去设置页开了开关）。 */
-async function ensureDeleteEnabled() {
-  if (_delEnabled) return true;
+/** 页面加载时查询开关：关闭则给 body 加 del-hidden，隐藏全部删除按钮。
+ *  查询失败时保守不隐藏，点击删除时仍会实时检查并有 403 兜底。 */
+async function applyDeleteGate() {
   try {
     const d = await fetch(`${API}/settings`).then(x => x.json());
     _delEnabled = String(d.enable_delete || '').trim().toLowerCase() === 'true';
-  } catch (e) { /* 查询失败时仍走弹窗，后续接口还有 403 兜底 */ }
-  if (_delEnabled) return true;
-  alertDeleteDisabled();
-  return false;
+  } catch (e) { return; }
+  document.body.classList.toggle('del-hidden', !_delEnabled);
+}
+
+/** 删除动作最终检查：已确认开启则直接放行；未确认/关闭时重新查询，
+ *  关闭时弹提示框（可跳设置页）并同步按钮可见性。 */
+async function ensureDeleteEnabled() {
+  if (_delEnabled !== true) {
+    try {
+      const d = await fetch(`${API}/settings`).then(x => x.json());
+      _delEnabled = String(d.enable_delete || '').trim().toLowerCase() === 'true';
+    } catch (e) { _delEnabled = false; }
+    document.body.classList.toggle('del-hidden', !_delEnabled);
+    if (!_delEnabled) { alertDeleteDisabled(); return false; }
+  }
+  return true;
 }
 
 /** 未启用删除功能的模态提示：说明原因 + 前往设置按钮 */
@@ -282,7 +293,8 @@ function alertDeleteDisabled() {
   mask.onclick = e => { if (e.target === mask) mask.style.display = 'none'; };
 }
 
-// ---------- init（仅首页执行；浏览/设置/日志/预览页同样引入本文件） ----------
+// ---------- init（首页执行概览；所有页面统一做删除开关门控） ----------
 if (document.getElementById('emby-overview')) {
   loadOverview();
 }
+applyDeleteGate();
