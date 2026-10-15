@@ -118,18 +118,33 @@ class EmbyClient:
             for p in list(lib.get("paths", [])):
                 norm = p.replace("\\", "/").rstrip("/")
                 if norm.lower() == target:
-                    r = self._delete(
-                        "/Library/VirtualFolders/Paths",
-                        params={"name": lib["name"], "path": p,
-                                "refreshLibrary": "true"})
-                    if r.status_code < 400:
+                    # Emby 4.10 移除路径同样需要库的 Guid（Id 参数）；
+                    # 仅传 name 会因找不到库对象报 500 空引用。
+                    # 依次尝试 Id/refresh 组合，直到成功。
+                    detail = ""
+                    ok = False
+                    for extra, refresh in (
+                            ({"Id": lib.get("guid")}, "true"),
+                            ({"Id": lib.get("guid")}, "false"),
+                            ({"name": lib["name"]}, "true")):
+                        params = {**extra, "path": p,
+                                  "refreshLibrary": refresh}
+                        r = self._delete("/Library/VirtualFolders/Paths",
+                                         params=params)
+                        if r.status_code < 400:
+                            ok = True
+                            break
+                        body = (r.text or "").strip()
+                        detail = (f"HTTP {r.status_code}"
+                                  + (f"：{body[:200]}" if body else ""))
+                    if ok:
                         removed = True
                         db.execute("DELETE FROM emby_map WHERE path=? OR path=?",
                                    (norm, norm.lower()))
                         log.info("Emby 移除路径: %s (库 %s)", p, lib["name"])
                     else:
                         raise EmbyError(
-                            f"Emby 拒绝移除路径（HTTP {r.status_code}）: {p}")
+                            f"Emby 拒绝移除路径 (库 {lib['name']}): {detail}")
                     break
         return removed
 
