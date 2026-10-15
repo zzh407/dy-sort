@@ -227,6 +227,8 @@ function confirmDelete(mode, info) {
           </div>
       </div>`;
 
+    mask.style.display = 'flex';
+    console.log('[DYSort] confirmDelete shown:', mode);
     const okBtn = mask.querySelector('#del-ok');
     const cancelBtn = mask.querySelector('#del-cancel');
     const gate = isBlogger

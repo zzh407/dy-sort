@@ -99,6 +99,7 @@ header h1 span { background: linear-gradient(120deg, var(--accent), var(--accent
   box-shadow: 0 4px 16px rgba(91, 140, 255, .32);
 }
 .btn.primary:hover { box-shadow: 0 8px 24px rgba(91, 140, 255, .42); }
+.btn.dim { opacity: .45; }
 .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
 .btn.danger {
   background: linear-gradient(180deg, rgba(240, 78, 78, .16), rgba(240, 78, 78, .08));
