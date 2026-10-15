@@ -185,7 +185,8 @@ function _delModal() {
 
 /**
  * 删除确认弹窗。resolve 执行结果对象或 null（取消）。
- * mode: 'video' 单视频（需勾选确认）| 'blogger' 整个博主（需输入博主名确认）
+ * mode: 'video' 单视频 | 'blogger' 整个博主
+ * 不设输入博主名/勾选等二次门控，确认按钮直接可用，点「取消」或遮罩即放弃。
  */
 function confirmDelete(mode, info) {
   return new Promise(resolve => {
@@ -213,35 +214,18 @@ function confirmDelete(mode, info) {
           ${isBlogger
             ? '此操作将永久删除磁盘上的整个博主目录（含全部视频、海报、元数据），不可恢复。'
             : '此操作将永久删除该视频目录（含海报、元数据），不可恢复。'}
-          ${isBlogger ? '请输入博主名以确认：' : '请勾选下方确认框：'}
         </div>
-        ${isBlogger
-          ? `<input class="del-input" id="del-input" autocomplete="off"
-                   placeholder="输入 ${esc(target)} 以解锁删除">`
-          : `<label class="del-check"><input type="checkbox" id="del-check">
-             我确认删除该视频，并了解不可恢复</label>`}
         <div class="modal-foot">
           <button class="btn" id="del-cancel">取消</button>
-          <button class="btn btn-danger" id="del-ok" disabled>
+          <button class="btn btn-danger" id="del-ok">
             ${isBlogger ? '永久删除博主' : '永久删除视频'}</button>
-          </div>
+        </div>
       </div>`;
 
     mask.style.display = 'flex';
     console.log('[DYSort] confirmDelete shown:', mode);
     const okBtn = mask.querySelector('#del-ok');
     const cancelBtn = mask.querySelector('#del-cancel');
-    const gate = isBlogger
-      ? mask.querySelector('#del-input')
-      : mask.querySelector('#del-check');
-    const sync = () => {
-      okBtn.disabled = isBlogger
-        ? (gate.value.trim() !== target)
-        : !gate.checked;
-    };
-    gate.addEventListener(isBlogger ? 'input' : 'change', sync);
-    if (isBlogger) setTimeout(() => gate.focus(), 50);
-
     okBtn.onclick = () => { mask.style.display = 'none'; resolve(true); };
     cancelBtn.onclick = () => { mask.style.display = 'none'; resolve(null); };
     mask.onclick = e => { if (e.target === mask) { mask.style.display = 'none'; resolve(null); } };
