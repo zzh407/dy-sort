@@ -148,6 +148,8 @@ function updateStats() {
   if (txt === _statCache) return;
   _statCache = txt;
   document.getElementById('stats').textContent = txt;
+  const btn = document.getElementById('btn-del-blogger');
+  if (btn) btn.disabled = !selected.size;   // 未勾选时置灰，避免「点了没反应」
 }
 
 function renderPager() {

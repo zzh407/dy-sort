@@ -438,12 +438,13 @@ def save_settings(req: SettingsRequest):
 # ---------- 前端 ----------
 @app.middleware("http")
 async def no_cache_static(request, call_next):
-    """静态页面/资源禁用缓存：前端无构建无版本号，避免改版后浏览器仍用旧 JS。"""
+    """静态页面/资源禁用缓存：前端无构建无版本号，避免改版后浏览器仍用旧 JS。
+    no-store：任何情况下都不得从缓存取（no-cache 的启发式缓存旧条目仍可能残留）。"""
     resp = await call_next(request)
     p = request.url.path
     if not p.startswith("/api/") and (
             p == "/" or "." in p.rsplit("/", 1)[-1]):
-        resp.headers["Cache-Control"] = "no-cache"
+        resp.headers["Cache-Control"] = "no-store"
     return resp
 
 import os
