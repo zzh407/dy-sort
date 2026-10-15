@@ -182,6 +182,62 @@ host_video_root（留空则为 /data）[ / 绑定子目录] / 博主ID
 3. **填 Emby 侧根（可选）**：仅当 Emby 看到的路径与 `/data` 不一致时填写，典型场景见下表。
 4. **扫描并入库**：保存后点浏览页「扫描」（或等定时扫描），在首页映射总览确认无误后勾选视频「加入 Emby」。
 
+### 以飞牛 fnOS 为例（我的实际配置）
+
+飞牛 fnOS + Docker：视频放在存储空间的共享文件夹 `media` 下，dy-sort 与 Emby 都是容器，Emby 把同一份父目录挂载为 `/media`。
+
+磁盘目录（飞牛文件管理中：存储空间 1 / `1000` / `media` / `dy` / `up`，博主ID 为一级目录）：
+
+```
+/vol1/1000/media/dy/up/
+├── 博主A/
+│   ├── metadata.json        （可选）
+│   └── 视频名/
+│       ├── poster.jpg       （可选）
+│       └── 视频名.mp4
+└── 博主B/…
+```
+
+dy-sort 容器：
+
+```yaml
+services:
+  dy-sort:
+    image: ghcr.io/zzh407/dy-sort:latest
+    ports:
+      - "8088:8000"
+    volumes:
+      - /vol1/1000/media/dy/up:/data   # 短视频根目录
+      - ./config:/app/config
+      - ./cache:/app/.cache
+```
+
+Emby 容器把父目录 `/vol1/1000/media` 挂载为 `/media`（关键：两个容器访问同一份文件）：
+
+```yaml
+services:
+  emby:
+    image: emby/embyserver
+    volumes:
+      - /vol1/1000/media:/media
+```
+
+设置页对应两项（`config/config.yaml` 等价写法）：
+
+```yaml
+media_subdir: ""              # 博主目录直接放在 /data 根，无需绑定子目录
+host_video_root: "/media/dy/up"   # /data 对应的 Emby 侧路径
+```
+
+完整路径流：
+
+```
+磁盘      /vol1/1000/media/dy/up/博主A
+  → dy-sort 容器   /data/博主A          （挂载 /vol1/1000/media/dy/up → /data）
+  → 加入 Emby 换算 /media/dy/up/博主A   （host_video_root 替换 /data）
+  → Emby 容器      /media/dy/up/博主A   （挂载 /vol1/1000/media → /media）✓ 同一份文件
+```
+
 ### 典型场景
 
 | 场景 | 挂载关系 | `host_video_root` 填写 |
