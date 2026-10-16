@@ -169,9 +169,6 @@ document.addEventListener('click', e => {
   }
 }, true);
 
-// ---------- 通用弹窗：删除确认（严格区分粒度与边界说明） ----------
-let _delResolve = null;
-
 function _delModal() {
   let mask = document.getElementById('del-mask');
   if (mask) return mask;
@@ -223,7 +220,6 @@ function confirmDelete(mode, info) {
       </div>`;
 
     mask.style.display = 'flex';
-    console.log('[DYSort] confirmDelete shown:', mode);
     const okBtn = mask.querySelector('#del-ok');
     const cancelBtn = mask.querySelector('#del-cancel');
     okBtn.onclick = () => { mask.style.display = 'none'; resolve(true); };
@@ -306,7 +302,6 @@ function alertDeleteDisabled() {
 }
 
 // ---------- init（首页执行概览；所有页面统一做删除开关门控） ----------
-console.log('DYSort web v3 · confirmAction ready');
 if (document.getElementById('emby-overview')) {
   loadOverview();
 }

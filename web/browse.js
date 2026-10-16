@@ -127,30 +127,24 @@ async function askDeleteBlogger(blogger) {
 
 // 批量：删除当前勾选的视频（逐个弹确认框，可随时取消）
 async function deleteSelectedVideos() {
-  try {
-    console.log('[DYSort] del-video click, selected =', selected.size);
-    if (!selected.size) { toast('请先勾选要删除的视频', 'err'); return; }
-    if (!await ensureDeleteEnabled()) return;   // 未开启时弹提示框
-    const vids = items.filter(i => selected.has(i.id));
-    if (!vids.length) { toast('没有可删除的视频', 'err'); return; }
-    for (const v of vids) {
-      await askDeleteVideo(v.id);   // 每个视频都弹独立确认框，可随时取消
-    }
-  } catch (e) { console.error('[DYSort] del-video failed:', e); toast('删除失败: ' + e, 'err'); }
+  if (!selected.size) { toast('请先勾选要删除的视频', 'err'); return; }
+  if (!await ensureDeleteEnabled()) return;   // 未开启时弹提示框
+  const vids = items.filter(i => selected.has(i.id));
+  if (!vids.length) { toast('没有可删除的视频', 'err'); return; }
+  for (const v of vids) {
+    await askDeleteVideo(v.id);   // 每个视频都弹独立确认框，可随时取消
+  }
 }
 
 // 批量：删除当前勾选视频所属的全部博主（去重后逐个弹窗确认）
 async function deleteSelectedBloggers() {
-  try {
-    console.log('[DYSort] del-blogger click, selected =', selected.size);
-    if (!selected.size) { toast('请先勾选视频', 'err'); return; }
-    if (!await ensureDeleteEnabled()) return;   // 未开启时弹提示框，先于批量确认
-    const bloggers = [...new Set(items.filter(i => selected.has(i.id)).map(i => i.blogger))];
-    if (!bloggers.length) { toast('没有可删除的博主目录', 'err'); return; }
-    for (const b of bloggers) {
-      await askDeleteBlogger(b);   // 每个博主都弹独立确认框，可随时取消
-    }
-  } catch (e) { console.error('[DYSort] del-blogger failed:', e); toast('删除失败: ' + e, 'err'); }
+  if (!selected.size) { toast('请先勾选视频', 'err'); return; }
+  if (!await ensureDeleteEnabled()) return;   // 未开启时弹提示框
+  const bloggers = [...new Set(items.filter(i => selected.has(i.id)).map(i => i.blogger))];
+  if (!bloggers.length) { toast('没有可删除的博主目录', 'err'); return; }
+  for (const b of bloggers) {
+    await askDeleteBlogger(b);   // 每个博主都弹独立确认框，可随时取消
+  }
 }
 
 // 统计栏（含定时扫描状态），内容不变时不重绘
