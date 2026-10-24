@@ -1,0 +1,63 @@
+# ============ 运行期数据（含密钥，切勿提交） ============
+# 配置目录：config/config.yaml 内含 Emby API Key
+config/
+# SQLite 索引（几十 MB）与模型缓存
+cache/
+# 环境变量文件（部署时可能放 token / 密码）
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ============ SQLite ============
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# ============ Python ============
+**/__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# ============ 临时文件 / 测试残留 ============
+.t_*.py
+.test_config/
+*.tmp
+*.bak
+*~
+*.swp
+*.swo
+
+# ============ 编辑器 / 系统 ============
+.vscode/
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ============ 日志 ============
+*.log
+logs/
+
+# ============ NAS 文件系统垃圾（fnOS / 群晖 / 回收站） ============
+@eaDir/
+\#recycle/
+lost+found/
+.@__thumb/
+.Trash-*/

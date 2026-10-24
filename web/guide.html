@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>目录映射指引 - DY Sort</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>DY<span>Sort</span></h1>
+  <nav class="nav">
+    <a href="/" class="nav-link">映射</a>
+        <a href="/recognize.html" class="nav-link">识别</a>
+    <a href="/guide.html" class="nav-link active">指引</a>
+    <a href="/browse.html" class="nav-link">浏览</a>
+    <a href="/settings.html" class="nav-link">设置</a>
+    <a href="/logs.html" class="nav-link">日志</a>
+  </nav>
+</header>
+
+<main class="page-narrow guide-wrap">
+  <h2>目录映射指引</h2>
+  <p class="guide-lead">
+    只有一件事：<b>同一份视频，三个地方各叫一个路径</b>。把它们对上，Emby 才能播放。
+  </p>
+
+  <div class="guide-flow">
+    <div class="gf-box">
+      <span class="gf-tag">磁盘</span>
+      <code>宿主机路径</code>
+      <span class="gf-note">compose 里 <code>volumes</code> 冒号左边，看你自己的 compose 文件</span>
+    </div>
+    <div class="gf-arrow">挂载 ↓</div>
+    <div class="gf-box" id="g-box-local">
+      <span class="gf-tag">本工具</span>
+      <code id="g-local">/data</code>
+      <span class="gf-note">容器内看到的根目录（「视频挂载」）</span>
+    </div>
+    <div class="gf-arrow">换算 ↓</div>
+    <div class="gf-box" id="g-box-emby">
+      <span class="gf-tag">Emby</span>
+      <code id="g-emby">…</code>
+      <span class="gf-note">Emby 容器里看到的同一份文件（「Emby 侧根」）</span>
+    </div>
+  </div>
+
+  <div class="guide-steps" id="g-steps">
+    <div class="gs-item"><span class="gs-ico">…</span><div class="gs-body">正在检测…</div></div>
+  </div>
+
+  <div class="guide-actions">
+    <button class="btn" onclick="detect()">重新检测</button>
+    <button class="btn primary" id="g-fix" onclick="autofix()" disabled
+            title="按现有 Emby 库路径反推 Emby 侧根并写入配置">一键校准 Emby 侧根</button>
+    <a class="btn" href="/settings.html">手动设置</a>
+  </div>
+  <div class="guide-msg" id="g-msg"></div>
+
+  <div id="g-issues"></div>
+
+  <details class="guide-details" open>
+    <summary>校验：现有 DY_ 库里每个目录能否反解回本地</summary>
+    <div id="g-libs" class="guide-libs"></div>
+  </details>
+
+  <details class="guide-details">
+    <summary>路径公式与常见坑</summary>
+    <div class="guide-doc">
+      <p>加入 Emby 时，交给它的路径 = <code id="g-formula">…</code></p>
+      <ul>
+        <li><b>两个容器必须看到同一份文件</b>：dy-sort 挂 <code>/vol1/…/dy/up → /data</code>，
+            Emby 至少要挂到它的父目录（例如 <code>/vol1/…/media → /media</code>）。</li>
+        <li><b>大小写敏感</b>：Linux 下 <code>/Media</code> 与 <code>/media</code> 是两个路径，必须完全一致。</li>
+        <li><b>「加入成功但播放不了」= Emby 侧路径没对上</b>：看 ③ 是否打勾，再点「一键校准」。</li>
+        <li><b>绑定子目录</b>（②）：只在 /data 下混着别的媒体、短视频在某个子目录里时才需要，换绑会重建索引。</li>
+      </ul>
+    </div>
+  </details>
+</main>
+
+<div id="toast"></div>
+<script src="/app.js"></script>
+<script src="/guide.js"></script>
+</body>
+</html>

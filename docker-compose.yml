@@ -1,0 +1,14 @@
+services:
+  dy-sort:
+    build: .
+    container_name: dy-sort
+    ports:
+      - "8088:8000"
+    volumes:
+      # 短视频根目录：结构 /博主ID/视频名/视频名.mp4，元数据与海报在同一目录
+      - /vol1/1000/media/dy/up:/data
+      # 配置目录：config.yaml 持久化（Emby 连接信息等），可直接编辑
+      - ./config:/app/config
+      # SQLite 索引 + 模型缓存
+      - ./cache:/app/.cache
+    restart: unless-stopped

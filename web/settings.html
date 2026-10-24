@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>设置 - DY Sort</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>DY<span>Sort</span></h1>
+  <nav class="nav">
+    <a href="/" class="nav-link">映射</a>
+        <a href="/recognize.html" class="nav-link">识别</a>
+    <a href="/guide.html" class="nav-link">指引</a>
+    <a href="/browse.html" class="nav-link">浏览</a>
+    <a href="/settings.html" class="nav-link active">设置</a>
+    <a href="/logs.html" class="nav-link">日志</a>
+  </nav>
+</header>
+
+<main class="page-narrow">
+  <h2 style="margin-bottom:16px">设置（持久化保存）</h2>
+
+  <div class="form-row">
+    <label>Emby 服务器地址</label>
+    <input id="s-emby-url" placeholder="http://192.168.1.10:8096">
+  </div>
+  <div class="form-row">
+    <label>Emby API Key</label>
+    <input id="s-emby-key" type="password" placeholder="留空则保持不变">
+    <div class="hint" id="s-key-hint"></div>
+  </div>
+  <div class="form-row">
+    <label>媒体库名称前缀（只操作匹配的库）</label>
+    <input id="s-prefix" placeholder="DY_">
+  </div>
+  <div class="form-row">
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+      <input type="checkbox" id="s-auto-lib" style="width:auto">
+      自动管理媒体库容量（超上限时新建同名带序号库）
+    </label>
+    <div class="hint">开启后「加入 Emby」以博主目录为单位分流：超过上限的库不再追加，改建同名序号库（DY_瑜伽裤 → DY_瑜伽裤2 → DY_瑜伽裤3）。同一个目录不会拆到两个库。</div>
+  </div>
+  <div class="form-row">
+    <label>单个媒体库视频上限</label>
+    <input id="s-max-videos" type="number" min="1" step="1" placeholder="2000">
+    <div class="hint">DY_ 库的视频数超过该值就不再往里加；映射页会显示每个库的用量，超限库可点「整理」把放不下的目录整体迁到新库</div>
+  </div>
+  <div class="form-row">
+    <label>绑定的短视频目录（/data 下）</label>
+    <div style="display:flex;gap:8px">
+      <select id="s-subdir" style="flex:1">
+        <option value="">/（/data 根目录）</option>
+      </select>
+      <button class="btn" onclick="refreshDirs()">刷新</button>
+    </div>
+    <div class="hint">/data 下混有其他媒体时，选择短视频所在子目录；换绑后索引自动重建</div>
+  </div>
+  <div class="form-row">
+    <label>定时重新扫描（分钟）</label>
+    <input id="s-scan-interval" type="number" min="0" step="1" placeholder="0">
+    <div class="hint">0 = 关闭；保存后立即生效，无需重启容器</div>
+  </div>
+  <div class="form-row">
+    <label>Emby 侧视频根路径（选填）</label>
+    <input id="s-host-root" placeholder="例如 D:\Videos，Emby 与本容器路径不一致时填写">
+    <div class="hint">填的是 /data 对应的 Emby 侧路径；传给 Emby 的博主目录 = 该路径/绑定子目录/博主ID。为空则用容器内实际路径</div>
+  </div>
+  <div class="form-row">
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+      <input type="checkbox" id="s-enable-delete" style="width:auto">
+      启用删除功能（危险）
+    </label>
+    <div class="hint">开启后可删除单个视频或整个博主目录（磁盘文件不可恢复，博主级删除会联动移出 Emby）。所有删除均有二次确认；关闭立即生效</div>
+  </div>
+
+  <h3 class="settings-sub">图像识别</h3>
+  <div class="form-row">
+    <label>识别引擎</label>
+    <select id="s-engine" style="width:100%">
+      <option value="local">本地模型（默认，内置 CLIP，自动下载）</option>
+      <option value="llm">大模型（云端 OpenAI 兼容）</option>
+      <option value="rules">关键词规则（不读图片，零成本）</option>
+    </select>
+    <div class="hint">
+      本地模型：首次识别会自动下载 CLIP ONNX（quantized 约 155MB）到下面的目录，之后完全离线推理，不需要 Ollama 之类的外部服务；
+      大模型：默认用智谱 GLM-4V-Flash（免费），只需填 API Key；
+      规则：只用 Emby 库名 / 博主名 / 视频名里的关键词。
+    </div>
+  </div>
+  <div class="form-row">
+    <label>本地模型规格</label>
+    <select id="s-local-variant" style="width:100%">
+      <option value="quantized">ViT-B/32 quantized（约 155MB，推荐）</option>
+      <option value="large">ViT-L/14 quantized（约 434MB，更准但慢 5~10 倍）</option>
+      <option value="fp32">ViT-B/32 fp32（约 600MB，精度略高）</option>
+    </select>
+  </div>
+  <div class="form-row">
+    <label>本地模型输出粒度</label>
+    <select id="s-local-granularity" style="width:100%">
+      <option value="coarse">大类（推荐：袜类/裤装/裙装/上装/外套…；身材：胸部/腿部/腰腹…）</option>
+      <option value="fine">细标签（49 风格 / 21 身材，准确率更低）</option>
+    </select>
+    <div class="hint">CLIP 对同类细标签（包臀裙/半身裙/连衣裙）分辨力弱，大类明显更准；细标签仍保留在博主的 labels 里</div>
+  </div>
+  <div class="form-row">
+    <label>本地模型目录</label>
+    <input id="s-local-dir" placeholder="/app/.cache/models">
+    <div class="hint">放在 cache 卷里，容器重建/升级不会丢；下载后可以离线使用</div>
+  </div>
+  <div class="form-row">
+    <label>本地模型下载源</label>
+    <input id="s-local-mirror" placeholder="https://hf-mirror.com">
+    <div class="hint">国内默认走 hf-mirror；能直连时可以改成 https://huggingface.co</div>
+  </div>
+  <div class="form-row">
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+      <input type="checkbox" id="s-local-auto" style="width:auto">
+      首次识别时自动下载本地模型
+    </label>
+  </div>
+  <div class="form-row">
+    <label>大模型地址（OpenAI 兼容）</label>
+    <input id="s-vision-url" placeholder="https://open.bigmodel.cn/api/paas/v4">
+    <div class="hint">默认智谱（GLM-4V-Flash 免费）；也可填 OpenAI / DashScope / 火山方舟 / 本地 vLLM 的兼容地址</div>
+  </div>
+  <div class="form-row">
+    <label>大模型 API Key</label>
+    <input id="s-vision-key" type="password" placeholder="智谱开放平台 API Key；留空则保持不变">
+    <div class="hint" id="s-vision-hint"></div>
+  </div>
+  <div class="form-row">
+    <label>大模型名称</label>
+    <input id="s-vision-model" placeholder="glm-4v-flash">
+    <div class="hint">默认 glm-4v-flash（智谱免费图像理解）；也可换成 glm-5.3-flash、gpt-4o-mini、qwen-vl-max 等</div>
+  </div>
+  <div class="form-row">
+    <label>标签关键词（穿衣风格，默认内置同义词表）</label>
+    <textarea id="s-label-keywords" rows="3"
+      placeholder="丝袜:黑丝,连裤袜; 瑜伽裤:瑜伽; 连衣裙:连身裙"></textarea>
+    <div class="hint">格式「标签:关键词1,关键词2; 标签2:关键词」。用于本地识别匹配，也用于把模型输出的同义词归位到标准标签</div>
+  </div>
+  <div class="form-row">
+    <label>标签关键词（身材，默认内置同义词表）</label>
+    <textarea id="s-body-keywords" rows="2"
+      placeholder="大胸:巨乳,胸大; 长腿:大长腿,腿长"></textarea>
+  </div>
+  <div class="form-row">
+    <label>穿衣风格标签（逗号分隔）</label>
+    <input id="s-style-labels" placeholder="丝袜,网袜,瑜伽裤,连衣裙,半身裙,JK制服,旗袍,汉服,洛丽塔,礼服…">
+    <div class="hint">识别结果只会落在这些标签里；默认 49 个，改完保存后立即生效</div>
+  </div>
+  <div class="form-row">
+    <label>身材标签（逗号分隔，第二个维度）</label>
+    <input id="s-body-labels" placeholder="大胸,小胸,长腿,高个,娇小,细腰,翘臀,马甲线…">
+    <div class="hint">本地模型每张图只报最像的一个身材大类，按命中张数排序；默认 21 个</div>
+  </div>
+  <div class="form-row">
+    <label>快速识别采样（每个博主随机抽几个视频）</label>
+    <input id="s-vision-sample" type="number" min="10" max="50" step="1" placeholder="10">
+    <div class="hint">至少 10 个（素材不足时按实际数量）；「识别」页的快速识别用它，「全量识别」不看这个值</div>
+  </div>
+  <div class="form-row">
+    <label>每次请求图片数 / 并发数</label>
+    <div style="display:flex;gap:8px">
+      <input id="s-vision-batch" type="number" min="1" max="10" step="1" style="flex:1" placeholder="1">
+      <input id="s-vision-conc" type="number" min="1" max="8" step="1" style="flex:1" placeholder="2">
+    </div>
+    <div class="hint">每次 1 张最准也最贵（抽 10 张 = 10 次请求）；合并成 2~5 张省请求但可能少判几张；并发别超过服务商限流</div>
+  </div>
+  <div class="actions" style="margin-top:18px">
+    <button class="btn primary" onclick="saveSettings()">保存</button>
+  </div>
+</main>
+
+<div id="toast"></div>
+<script src="/app.js"></script>
+<script src="/settings.js"></script>
+</body>
+</html>

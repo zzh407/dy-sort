@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图像识别 - DY Sort</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>DY<span>Sort</span></h1>
+  <nav class="nav">
+    <a href="/" class="nav-link">映射</a>
+    <a href="/recognize.html" class="nav-link active">识别</a>
+    <a href="/guide.html" class="nav-link">指引</a>
+    <a href="/browse.html" class="nav-link">浏览</a>
+    <a href="/settings.html" class="nav-link">设置</a>
+    <a href="/logs.html" class="nav-link">日志</a>
+  </nav>
+</header>
+
+<main class="page-recognize">
+  <section class="rec-hero">
+    <div class="rec-hero-main">
+      <h2>图像识别</h2>
+      <p class="rec-sub">用每个博主的海报判断<b>穿衣风格</b>与<b>身材标签</b>；点博主看详情，也可只识别他一个人。</p>
+    </div>
+    <div class="rec-hero-stats" id="rec-stats">
+      <div class="rec-stat"><span class="rec-stat-num">–</span><span class="rec-stat-label">已标注</span></div>
+    </div>
+  </section>
+
+  <section class="rec-actions">
+    <button class="btn primary" id="rec-quick" onclick="startRun('quick')">
+      快速识别 <span class="rec-btn-sub">未标注博主 · 每人 10 个视频</span>
+    </button>
+    <button class="btn" id="rec-full" onclick="startRun('full')">
+      全量识别 <span class="rec-btn-sub">所有博主 · 全部视频</span>
+    </button>
+    <button class="btn danger" id="rec-stop" onclick="stopRun()" disabled>停止</button>
+    <span class="rec-tip" id="rec-tip"></span>
+  </section>
+
+  <section class="rec-progress" id="rec-progress">
+    <div class="rec-bar"><div class="rec-bar-in" id="rec-bar-in"></div></div>
+    <div class="rec-progress-lines">
+      <span id="rec-progress-main">空闲中</span>
+      <span id="rec-progress-sub" class="rec-progress-sub"></span>
+    </div>
+  </section>
+
+  <section class="rec-filters">
+    <input id="rec-q" class="rec-search" placeholder="搜索博主或标签，如 丝袜 / 长腿" oninput="renderBloggers()">
+    <div class="rec-chips" id="rec-chips"></div>
+  </section>
+
+  <section class="rec-grid" id="rec-grid"></section>
+  <div class="rec-empty" id="rec-empty" style="display:none">没有匹配的博主</div>
+</main>
+
+<div id="toast"></div>
+<script src="/app.js"></script>
+<script src="/recognize.js"></script>
+</body>
+</html>

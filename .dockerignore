@@ -1,0 +1,20 @@
+# 构建上下文裁剪：本地配置/缓存/源码元数据不进镜像
+#
+# 说明：Dockerfile 实际只 COPY requirements.txt / backend / web，所以
+# 这些规则主要用来缩小构建上下文；其中 .env 一类规则同时兜住
+# “改成 COPY . .” 或 “把 .env 放进 backend/、web/ 子目录” 的情况。
+config/
+cache/
+.env
+.env.*
+*.pem
+*.key
+.git/
+.gitignore
+.gitattributes
+**/__pycache__/
+**/*.pyc
+.t_*
+.test_config/
+*.log
+*.md

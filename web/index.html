@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DY Sort - 媒体库映射</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>DY<span>Sort</span></h1>
+  <nav class="nav">
+    <a href="/" class="nav-link active">映射</a>
+        <a href="/recognize.html" class="nav-link">识别</a>
+    <a href="/guide.html" class="nav-link">指引</a>
+    <a href="/browse.html" class="nav-link">浏览</a>
+    <a href="/settings.html" class="nav-link">设置</a>
+    <a href="/logs.html" class="nav-link">日志</a>
+  </nav>
+</header>
+
+<main class="page-home">
+  <section id="emby-overview" style="display:none">
+    <div class="ov-head">
+      <b>Emby 媒体库 → 本地目录</b>
+      <span id="ov-root"></span>
+      <button class="btn primary" onclick="openRebalance()"
+              title="对所有超过上限的媒体库执行整理：把放不下的目录整体迁到新建序号库">一键整理</button>
+      <button class="btn icon-btn" id="ov-eye" onclick="toggleOvHide()"
+              title="隐藏媒体库名与目录名" aria-label="隐藏媒体库名与目录名">
+        <svg class="eye-open" viewBox="0 0 24 24" width="16" height="16" fill="none"
+             stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        <svg class="eye-off" viewBox="0 0 24 24" width="16" height="16" fill="none"
+             stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M3 3l18 18"/>
+          <path d="M10.6 6.2A10.9 10.9 0 0112 6c6.4 0 10 6 10 6a17.3 17.3 0 01-3.3 4"/>
+          <path d="M6.4 8A17 17 0 002 12s3.6 6 10 6c1.4 0 2.7-.3 3.8-.8"/>
+        </svg>
+      </button>
+      <button class="btn" onclick="loadOverview()">刷新</button>
+    </div>
+    <div id="ov-body"></div>
+  </section>
+  <div class="home-empty" id="home-empty" style="display:none">
+    <p>未找到 DY_ 前缀的 Emby 媒体库</p>
+    <p class="hint">请检查 <a href="/settings.html">设置</a> 中的 Emby 地址、API Key 与媒体库前缀</p>
+  </div>
+</main>
+
+<div id="toast"></div>
+<script src="/app.js"></script>
+</body>
+</html>
